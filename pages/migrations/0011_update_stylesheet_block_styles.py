@@ -1,11 +1,9 @@
+from django.db import migrations
+
+UPDATED_CSS = """\
 /* ============================================================
    GLOBAL / BODY
    ============================================================ */
-
-/* Always reserve scrollbar space so layout doesn't shift between pages */
-html {
-    overflow-y: scroll;
-}
 
 body {
     background: #f5f5f5;
@@ -129,10 +127,8 @@ p {
 }
 
 .text-block {
-    border: 1px solid #cccccc;
     padding: 20px;
     border-radius: 10px;
-    background: #ffffff;
 }
 
 /* Text block body copy */
@@ -155,7 +151,7 @@ p {
 
 /* ------ Text block style templates ------ */
 
-/* Template: Default — bordered card with light background (base style above) */
+/* Template: Default — bordered card with light background */
 .text-block--default {
     border: 1px solid #cccccc;
     background: #ffffff;
@@ -220,3 +216,27 @@ footer small {
     color: #ffffff;
     font-size: 0.8rem;
 }
+"""
+
+
+def update_stylesheet(apps, schema_editor):
+    SiteStylesheet = apps.get_model('pages', 'SiteStylesheet')
+    obj = SiteStylesheet.objects.first()
+    if obj:
+        obj.css = UPDATED_CSS
+        obj.save()
+
+
+def no_op(apps, schema_editor):
+    pass
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('pages', '0010_textblock_style'),
+    ]
+
+    operations = [
+        migrations.RunPython(update_stylesheet, no_op),
+    ]

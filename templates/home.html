@@ -2,41 +2,20 @@
 
 {% block content %}
 
-<style>
-.block-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.text-block {
-    border: 1px solid #ccc;
-    padding: 20px;
-    border-radius: 10px;
-    background: #f5f5f5;
-}
-</style>
-
 <h1 class="mb-4">Pages - this text is edited in home.html</h1>
 <h2>Text Blocks</h2>
 
 <div class="block-container">
 
     {% for block in blocks %}
-        <div class="text-block">
+        <div class="text-block text-block--{{ block.style }}">
 
             <h3>{{ block.title }}</h3>
 
             <p>{{ block.content }}</p>
 
-            <a href="{% url 'edit_block' block.id %}">
-                Edit
-            </a>
-
-            <a href="{% url 'delete_block' block.id %}">
-                Delete
-            </a>
+            <a href="{% url 'edit_block' block.id %}">Edit</a>
+            <a href="{% url 'delete_block' block.id %}">Delete</a>
 
         </div>
     {% endfor %}

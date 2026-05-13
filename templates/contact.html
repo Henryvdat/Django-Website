@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if contact_info %}
+
+    <h1 class="mb-3">{{ contact_info.heading }}</h1>
+
+    {% if contact_info.intro_text %}
+        <p class="lead mb-4">{{ contact_info.intro_text }}</p>
+    {% endif %}
+
+    <div class="row g-4">
+
+        {% if contact_info.email %}
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm p-3">
+                <h5 class="card-title">Email</h5>
+                <p class="card-text">
+                    <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a>
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if contact_info.phone %}
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm p-3">
+                <h5 class="card-title">Phone</h5>
+                <p class="card-text">
+                    <a href="tel:{{ contact_info.phone }}">{{ contact_info.phone }}</a>
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if contact_info.address %}
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm p-3">
+                <h5 class="card-title">Address</h5>
+                <p class="card-text">{{ contact_info.address|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if contact_info.opening_hours %}
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm p-3">
+                <h5 class="card-title">Opening Hours</h5>
+                <p class="card-text">{{ contact_info.opening_hours|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {% if contact_info.extra_info %}
+        <div class="mt-4">
+            {{ contact_info.extra_info|linebreaks }}
+        </div>
+    {% endif %}
+
+{% else %}
+    <h1>Contact</h1>
+    <p>Contact information has not been set up yet. Add it via the admin panel under <strong>Pages → Contact Page</strong>.</p>
+{% endif %}
+
+{% endblock %}

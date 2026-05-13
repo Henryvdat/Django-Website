@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
 from rest_framework import viewsets
 
-from .models import Page, TextBlock
+from .models import Page, TextBlock, Footer, SiteStylesheet, BootstrapOverrides, ContactInfo
 from .serializers import PageSerializer
 from .forms import TextBlockForm
 
@@ -11,17 +12,13 @@ class PageViewSet(viewsets.ModelViewSet):
     serializer_class = PageSerializer
 
 
-from .models import Footer
-
 def home(request):
     pages = Page.objects.filter(published=True)
     blocks = TextBlock.objects.all().order_by('order')
-    footer = Footer.objects.first()
 
     return render(request, 'home.html', {
         'pages': pages,
         'blocks': blocks,
-        'footer': footer,
     })
 
 
@@ -55,3 +52,22 @@ def delete_block(request, block_id):
     block.delete()
 
     return redirect('home')
+
+
+def contact(request):
+    contact_info = ContactInfo.objects.first()
+    return render(request, 'contact.html', {
+        'contact_info': contact_info,
+    })
+
+
+def dynamic_css(request):
+    stylesheet = SiteStylesheet.objects.first()
+    css = stylesheet.css if stylesheet else ''
+    return HttpResponse(css, content_type='text/css')
+
+
+def bootstrap_overrides_css(request):
+    overrides = BootstrapOverrides.objects.first()
+    css = overrides.css if overrides else ''
+    return HttpResponse(css, content_type='text/css')

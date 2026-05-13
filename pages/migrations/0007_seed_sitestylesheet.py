@@ -1,11 +1,9 @@
+from django.db import migrations
+
+INITIAL_CSS = """\
 /* ============================================================
    GLOBAL / BODY
    ============================================================ */
-
-/* Always reserve scrollbar space so layout doesn't shift between pages */
-html {
-    overflow-y: scroll;
-}
 
 body {
     background: #f5f5f5;
@@ -153,52 +151,6 @@ p {
     text-decoration: underline;
 }
 
-/* ------ Text block style templates ------ */
-
-/* Template: Default — bordered card with light background (base style above) */
-.text-block--default {
-    border: 1px solid #cccccc;
-    background: #ffffff;
-}
-
-/* Template: No Background — clean text only, no border or fill */
-.text-block--no_background {
-    border: none;
-    background: transparent;
-    padding: 10px 0;
-}
-
-.text-block--no_background h3 {
-    color: #1a1a2e;
-}
-
-.text-block--no_background p {
-    color: #444444;
-}
-
-/* Template: Custom Font — large serif display style */
-.text-block--custom_font {
-    border: none;
-    background: #fdfaf5;
-    border-left: 4px solid #c8a96e;
-}
-
-.text-block--custom_font h3 {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2c1a00;
-    letter-spacing: 0.5px;
-}
-
-.text-block--custom_font p {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.05rem;
-    line-height: 1.9;
-    color: #4a3728;
-    font-style: italic;
-}
-
 
 /* ============================================================
    FOOTER
@@ -220,3 +172,26 @@ footer small {
     color: #ffffff;
     font-size: 0.8rem;
 }
+"""
+
+
+def seed_stylesheet(apps, schema_editor):
+    SiteStylesheet = apps.get_model('pages', 'SiteStylesheet')
+    if not SiteStylesheet.objects.exists():
+        SiteStylesheet.objects.create(css=INITIAL_CSS)
+
+
+def delete_stylesheet(apps, schema_editor):
+    SiteStylesheet = apps.get_model('pages', 'SiteStylesheet')
+    SiteStylesheet.objects.all().delete()
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('pages', '0006_add_sitestylesheet'),
+    ]
+
+    operations = [
+        migrations.RunPython(seed_stylesheet, delete_stylesheet),
+    ]
