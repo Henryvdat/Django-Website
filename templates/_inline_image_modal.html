@@ -300,9 +300,15 @@
 
     var cm     = window.activeMDE.codemirror;
     var cursor = cm.getCursor();
-    // Insert on its own line(s) around the cursor
-    cm.replaceRange('\n' + html + '\n', cursor);
+    cm.replaceRange('\n\n' + html + '\n\n', cursor);
     cm.focus();
+
+    // Switch to HTML mode so the raw markup is stored as-is and
+    // Python-Markdown never touches the div's width styles.
+    var htmlTabBtn = document.querySelector('.tab-btn[data-tab="html"]');
+    if (htmlTabBtn && !htmlTabBtn.classList.contains('active')) {
+      htmlTabBtn.click();
+    }
 
     // Close modal
     bootstrap.Modal.getInstance(el('inlineImageModal')).hide();

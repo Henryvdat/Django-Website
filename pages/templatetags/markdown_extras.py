@@ -10,7 +10,7 @@ def markdown_filter(value):
     """Convert Markdown text to HTML."""
     if not value:
         return ''
-    extensions = ['extra', 'nl2br', 'sane_lists']
+    extensions = ['extra', 'sane_lists']
     result = md.markdown(str(value), extensions=extensions)
     return mark_safe(result)
 
@@ -27,6 +27,6 @@ def render_content(content, content_format):
     if content_format == 'html':
         return mark_safe(content)
     # default: markdown
-    extensions = ['extra', 'nl2br', 'sane_lists']
+    extensions = ['extra', 'sane_lists']
     result = md.markdown(str(content), extensions=extensions)
     return mark_safe(result)
