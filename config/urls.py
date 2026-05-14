@@ -2,16 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework import routers
-from pages.views import PageViewSet
-
-router = routers.DefaultRouter()
-router.register(r'api/pages', PageViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # All app URLs (including the DRF router) live inside pages/urls.py
     path('', include('pages.urls')),
-    path('', include(router.urls)),
 ]
 
 if settings.DEBUG:

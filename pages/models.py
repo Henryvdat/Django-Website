@@ -1,61 +1,108 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 
 class Page(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    content = models.TextField()
-    published = models.BooleanField(default=True)
+    title      = models.CharField(max_length=200)
+    slug       = models.SlugField(unique=True)
+    content    = models.TextField()
+    published  = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse('page_detail', kwargs={'slug': self.slug})
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
 
 class TextBlock(models.Model):
 
-    STYLE_DEFAULT = 'default'
+    STYLE_DEFAULT      = 'default'
     STYLE_NO_BACKGROUND = 'no_background'
-    STYLE_CUSTOM_FONT = 'custom_font'
+    STYLE_CUSTOM_FONT  = 'custom_font'
 
     STYLE_CHOICES = [
-        (STYLE_DEFAULT,       'Default — bordered card with light background'),
-        (STYLE_NO_BACKGROUND, 'No Background — clean, text only'),
-        (STYLE_CUSTOM_FONT,   'Custom Font — large serif display style'),
+        (STYLE_DEFAULT,        'Default — bordered card with light background'),
+        (STYLE_NO_BACKGROUND,  'No Background — clean, text only'),
+        (STYLE_CUSTOM_FONT,    'Custom Font — large serif display style'),
     ]
 
-    title = models.CharField(max_length=100, blank=True)
-    content = models.TextField()
-    order = models.IntegerField(default=0)
-    style = models.CharField(
+    ALIGN_LEFT   = 'left'
+    ALIGN_CENTER = 'center'
+    ALIGN_RIGHT  = 'right'
+
+    ALIGN_CHOICES = [
+        (ALIGN_LEFT,   'Left'),
+        (ALIGN_CENTER, 'Centre'),
+        (ALIGN_RIGHT,  'Right'),
+    ]
+
+    WIDTH_CHOICES = [
+        (25,  '25%'),
+        (33,  '33%'),
+        (50,  '50%'),
+        (66,  '66%'),
+        (75,  '75%'),
+        (100, '100% (full width)'),
+    ]
+
+    page = models.ForeignKey(
+        'Page', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='blocks',
+        help_text='Assign to a page, or leave blank to show on the home page',
+    )
+    title   = models.CharField(max_length=100, blank=True)
+    content = models.TextField(blank=True)
+    image   = models.ImageField(upload_to='blocks/', blank=True, null=True)
+    image_width = models.IntegerField(
+        choices=WIDTH_CHOICES,
+        default=100,
+        help_text='Display width of the block image as a percentage of its container',
+    )
+    image_align = models.CharField(
+        max_length=10,
+        choices=ALIGN_CHOICES,
+        default=ALIGN_LEFT,
+        help_text='Horizontal alignment of the block image',
+    )
+    order   = models.IntegerField(default=0)
+    style   = models.CharField(
         max_length=20,
         choices=STYLE_CHOICES,
         default=STYLE_DEFAULT,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title or f"Block {self.id}"
+        return self.title or f'Block {self.id}'
 
 
 class Footer(models.Model):
-    text = models.TextField(blank=True)
+    text           = models.TextField(blank=True)
     copyright_text = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
-        return "Site Footer"
+        return 'Site Footer'
 
 
 class SiteStylesheet(models.Model):
     css = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Site Stylesheet"
-        verbose_name_plural = "Site Stylesheet"
+        verbose_name        = 'Site Stylesheet'
+        verbose_name_plural = 'Site Stylesheet'
 
     def __str__(self):
-        return "Site Stylesheet"
+        return 'Site Stylesheet'
 
 
 class SiteSettings(models.Model):
@@ -63,7 +110,7 @@ class SiteSettings(models.Model):
     logo      = models.ImageField(upload_to='logo/', blank=True, null=True)
 
     class Meta:
-        verbose_name = 'Site Settings'
+        verbose_name        = 'Site Settings'
         verbose_name_plural = 'Site Settings'
 
     def __str__(self):
@@ -80,7 +127,7 @@ class ContactInfo(models.Model):
     extra_info    = models.TextField(blank=True, help_text='Any additional information to display at the bottom')
 
     class Meta:
-        verbose_name = 'Contact Page'
+        verbose_name        = 'Contact Page'
         verbose_name_plural = 'Contact Page'
 
     def __str__(self):
@@ -91,8 +138,8 @@ class BootstrapOverrides(models.Model):
     css = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Bootstrap Overrides"
-        verbose_name_plural = "Bootstrap Overrides"
+        verbose_name        = 'Bootstrap Overrides'
+        verbose_name_plural = 'Bootstrap Overrides'
 
     def __str__(self):
-        return "Bootstrap Overrides"
+        return 'Bootstrap Overrides'

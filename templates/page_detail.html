@@ -1,15 +1,28 @@
 {% extends 'base.html' %}
+{% load markdown_extras %}
+
+{% block title %}{{ page.title }} | My CMS{% endblock %}
 
 {% block content %}
 
-<h1>{{ page.title }}</h1>
+<div class="d-flex align-items-start justify-content-between mb-3">
+    <h1 class="mb-0">{{ page.title }}</h1>
+    {% if user.is_staff %}
+        <div class="d-flex gap-2 ms-3 flex-shrink-0">
+            <a href="{% url 'edit_page' page.slug %}" class="btn btn-sm btn-outline-secondary">✏️ Edit Page</a>
+            <a href="{% url 'add_block_page' page.slug %}" class="btn btn-sm btn-outline-primary">+ Add Block</a>
+        </div>
+    {% endif %}
+</div>
 
-{% if page.featured_image %}
-<img src="{{ page.featured_image.url }}" class="img-fluid mb-4 rounded">
+{% if page.content %}
+<div class="mb-4 prose">
+    {{ page.content|markdown }}
+</div>
 {% endif %}
 
-<div>
-    {{ page.content|linebreaks }}
-</div>
+{% if blocks %}
+    {% include '_block_list.html' with blocks=blocks %}
+{% endif %}
 
 {% endblock %}

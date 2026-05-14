@@ -1,0 +1,38 @@
+{% comment %}
+  Initialises an EasyMDE Markdown editor and wires up the "Insert image" toolbar button.
+
+  Required context variables:
+    element_id  — the id attribute of the <textarea> to enhance
+    min_height  — CSS min-height string, e.g. "200px"
+
+  The host template must:
+    • include this file inside {% block extra_js %}
+    • include '_inline_image_modal.html' after this include (once per page)
+    • have Bootstrap JS loaded in base.html (already done)
+
+  The initialised EasyMDE instance is stored in window.activeMDE so that
+  _inline_image_modal.html can insert content at the cursor position.
+{% endcomment %}
+
+<script>
+  window.activeMDE = new EasyMDE({
+    element:      document.getElementById('{{ element_id }}'),
+    spellChecker: false,
+    autosave:     { enabled: false },
+    minHeight:    '{{ min_height }}',
+    toolbar: [
+      'bold', 'italic', 'heading', '|',
+      'unordered-list', 'ordered-list', 'quote', '|',
+      'link', '|',
+      {
+        name:      'insert-image',
+        action:    function () { window.openInlineImageModal(); },
+        className: 'mde-insert-image',
+        title:     'Insert image (with size & position)',
+      },
+      '|',
+      'preview', 'side-by-side', 'fullscreen', '|',
+      'guide',
+    ],
+  });
+</script>

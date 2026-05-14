@@ -3,190 +3,92 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
-from .models import Page, SiteStylesheet, BootstrapOverrides, ContactInfo, SiteSettings
+
+from .constants import CSS_TEXTAREA_ATTRS, DEFAULT_BOOTSTRAP_OVERRIDES
+from .models import (
+    BootstrapOverrides, ContactInfo, Page,
+    SiteSettings, SiteStylesheet, TextBlock,
+)
 
 
-@admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
+# ── Shared utilities ──────────────────────────────────────────────────────────
+
+class SingletonAdminMixin:
+    """Prevents creating a second row for models that should only have one."""
     def has_add_permission(self, request):
-        return not SiteSettings.objects.exists()
+        return not self.model.objects.exists()
 
+
+# ── TextBlock inline ──────────────────────────────────────────────────────────
+
+class TextBlockInline(admin.StackedInline):
+    model  = TextBlock
+    extra  = 1
+    fields = ('title', 'content', 'image', 'image_width', 'image_align', 'style', 'order')
+
+
+# ── Page ──────────────────────────────────────────────────────────────────────
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'published')
+    list_display  = ('title', 'slug', 'published', 'updated_at')
+    list_filter   = ('published',)
+    search_fields = ('title', 'slug')
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [TextBlockInline]
 
+
+# ── Site Settings ─────────────────────────────────────────────────────────────
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(SingletonAdminMixin, admin.ModelAdmin):
+    pass
+
+
+# ── Contact Page ──────────────────────────────────────────────────────────────
 
 @admin.register(ContactInfo)
-class ContactInfoAdmin(admin.ModelAdmin):
+class ContactInfoAdmin(SingletonAdminMixin, admin.ModelAdmin):
     fieldsets = (
         ('Page Heading & Intro', {
-            'fields': ('heading', 'intro_text')
+            'fields': ('heading', 'intro_text'),
         }),
         ('Contact Details', {
-            'fields': ('email', 'phone', 'address', 'opening_hours')
+            'fields': ('email', 'phone', 'address', 'opening_hours'),
         }),
         ('Extra Information', {
-            'fields': ('extra_info',)
+            'fields': ('extra_info',),
         }),
     )
 
-    def has_add_permission(self, request):
-        return not ContactInfo.objects.exists()
 
+# ── Site Stylesheet ───────────────────────────────────────────────────────────
 
 class SiteStylesheetForm(forms.ModelForm):
     class Meta:
-        model = SiteStylesheet
-        fields = '__all__'
-        widgets = {
-            'css': forms.Textarea(attrs={
-                'style': (
-                    'font-family: monospace;'
-                    'font-size: 13px;'
-                    'width: 100%;'
-                    'height: 600px;'
-                    'background: #1e1e1e;'
-                    'color: #d4d4d4;'
-                    'border: 1px solid #444;'
-                    'padding: 12px;'
-                    'line-height: 1.5;'
-                ),
-                'spellcheck': 'false',
-            }),
-        }
+        model   = SiteStylesheet
+        fields  = '__all__'
+        widgets = {'css': forms.Textarea(attrs=CSS_TEXTAREA_ATTRS)}
 
 
 @admin.register(SiteStylesheet)
-class SiteStylesheetAdmin(admin.ModelAdmin):
+class SiteStylesheetAdmin(SingletonAdminMixin, admin.ModelAdmin):
     form = SiteStylesheetForm
 
-    def has_add_permission(self, request):
-        return not SiteStylesheet.objects.exists()
 
-
-DEFAULT_BOOTSTRAP_OVERRIDES = """\
-/* ============================================================
-   BOOTSTRAP OVERRIDES
-   These load after Bootstrap so they always take priority.
-   Uncomment any rule to activate it, or add your own below.
-   ============================================================ */
-
-
-/* --- Buttons -------------------------------------------- */
-
-/* .btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    border-radius: 6px;
-} */
-
-/* .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-} */
-
-
-/* --- Navbar --------------------------------------------- */
-
-/* .navbar.bg-dark {
-    background-color: #212529 !important;
-} */
-
-/* .navbar-brand {
-    font-size: 1.4rem;
-    font-weight: 700;
-} */
-
-
-/* --- Cards ---------------------------------------------- */
-
-/* .card {
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-} */
-
-/* .card-header {
-    font-weight: 600;
-} */
-
-
-/* --- Links ---------------------------------------------- */
-
-/* a {
-    color: #0d6efd;
-    text-decoration: none;
-} */
-
-/* a:hover {
-    text-decoration: underline;
-} */
-
-
-/* --- Typography ----------------------------------------- */
-
-/* body {
-    font-size: 1rem;
-    line-height: 1.6;
-} */
-
-/* h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-} */
-
-
-/* --- List Group (sidebar nav) --------------------------- */
-
-/* .list-group-item-action:hover {
-    background-color: #f0f0f0;
-} */
-
-
-/* --- Badges --------------------------------------------- */
-
-/* .badge.bg-primary {
-    background-color: #0d6efd !important;
-} */
-
-
-/* --- Forms ---------------------------------------------- */
-
-/* .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-} */
-"""
-
+# ── Bootstrap Overrides ───────────────────────────────────────────────────────
 
 class BootstrapOverridesForm(forms.ModelForm):
     class Meta:
-        model = BootstrapOverrides
-        fields = '__all__'
-        widgets = {
-            'css': forms.Textarea(attrs={
-                'style': (
-                    'font-family: monospace;'
-                    'font-size: 13px;'
-                    'width: 100%;'
-                    'height: 600px;'
-                    'background: #1e1e1e;'
-                    'color: #d4d4d4;'
-                    'border: 1px solid #444;'
-                    'padding: 12px;'
-                    'line-height: 1.5;'
-                ),
-                'spellcheck': 'false',
-            }),
-        }
+        model   = BootstrapOverrides
+        fields  = '__all__'
+        widgets = {'css': forms.Textarea(attrs=CSS_TEXTAREA_ATTRS)}
 
 
 @admin.register(BootstrapOverrides)
-class BootstrapOverridesAdmin(admin.ModelAdmin):
+class BootstrapOverridesAdmin(SingletonAdminMixin, admin.ModelAdmin):
     form = BootstrapOverridesForm
     change_form_template = 'admin/pages/bootstrapoverrides/change_form.html'
-
-    def has_add_permission(self, request):
-        return not BootstrapOverrides.objects.exists()
 
     def get_urls(self):
         urls = super().get_urls()

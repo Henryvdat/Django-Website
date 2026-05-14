@@ -1,0 +1,45 @@
+{% load markdown_extras %}
+{% comment %}
+  Shared block-list partial.
+  Usage:  {% include '_block_list.html' with blocks=blocks %}
+{% endcomment %}
+
+<div class="block-container">
+    {% for block in blocks %}
+        <div class="text-block text-block--{{ block.style }}">
+
+            {% if block.image %}
+                <div class="mb-3" style="width:{{ block.image_width }}%;{% if block.image_align == 'center' %}margin:0 auto;{% elif block.image_align == 'right' %}margin-left:auto;{% endif %}">
+                    <img src="{{ block.image.url }}"
+                         alt="{{ block.title }}"
+                         class="rounded"
+                         style="width:100%;height:auto;display:block;">
+                </div>
+            {% endif %}
+
+            {% if block.title or block.content %}
+                {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+                {% if block.content %}
+                    <div class="prose">{{ block.content|markdown }}</div>
+                {% endif %}
+            {% endif %}
+
+            {% if user.is_staff %}
+                <div class="mt-2 d-flex gap-2 align-items-center">
+                    <a href="{% url 'edit_block' block.id %}"
+                       class="btn btn-sm btn-outline-secondary">✏️ Edit</a>
+
+                    {# DELETE — POST form with CSRF token to prevent accidental deletion via GET #}
+                    <form method="post"
+                          action="{% url 'delete_block' block.id %}"
+                          onsubmit="return confirm('Delete this block?')"
+                          class="d-inline m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑 Delete</button>
+                    </form>
+                </div>
+            {% endif %}
+
+        </div>
+    {% endfor %}
+</div>

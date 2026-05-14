@@ -1,49 +1,30 @@
 {% extends 'base.html' %}
+{% load markdown_extras %}
 
 {% block content %}
 
-<h1 class="mb-4">Pages - this text is edited in home.html</h1>
-<h2>Text Blocks</h2>
-
-<div class="block-container">
-
-    {% for block in blocks %}
-        <div class="text-block text-block--{{ block.style }}">
-
-            <h3>{{ block.title }}</h3>
-
-            <p>{{ block.content }}</p>
-
-            <a href="{% url 'edit_block' block.id %}">Edit</a>
-            <a href="{% url 'delete_block' block.id %}">Delete</a>
-
-        </div>
-    {% endfor %}
-
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="mb-0">Home</h1>
+    {% if user.is_staff %}
+        <a href="{% url 'add_block_home' %}" class="btn btn-sm btn-outline-primary">+ Add Block</a>
+    {% endif %}
 </div>
 
+{% include '_block_list.html' with blocks=blocks %}
 
+{% if pages %}
 <div class="row mt-4">
-
-{% for page in pages %}
-<div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm">
-
-        {% if page.featured_image %}
-        <img src="{{ page.featured_image.url }}" class="card-img-top">
-        {% endif %}
-
-        <div class="card-body">
-            <h5>{{ page.title }}</h5>
-
-            <a href="/page/{{ page.slug }}/" class="btn btn-primary mt-2">
-                Read More
-            </a>
+    {% for page in pages %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5>{{ page.title }}</h5>
+                <a href="{{ page.get_absolute_url }}" class="btn btn-primary mt-2">Read More</a>
+            </div>
         </div>
     </div>
+    {% endfor %}
 </div>
-{% endfor %}
-
-</div>
+{% endif %}
 
 {% endblock %}

@@ -124,5 +124,19 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ── REST Framework ────────────────────────────────────────────────────────────
+# Default all API endpoints to admin-only. Individual viewsets can override.
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+    ],
+}
+
+# ── Security note ─────────────────────────────────────────────────────────────
+# SECRET_KEY is currently hardcoded. Before deploying to production, move it
+# to an environment variable:
+#   import os
+#   SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
