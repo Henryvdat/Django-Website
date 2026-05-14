@@ -48,25 +48,6 @@ class TextBlock(models.Model):
         (STYLE_CUSTOM_FONT,    'Custom Font — large serif display style'),
     ]
 
-    ALIGN_LEFT   = 'left'
-    ALIGN_CENTER = 'center'
-    ALIGN_RIGHT  = 'right'
-
-    ALIGN_CHOICES = [
-        (ALIGN_LEFT,   'Left'),
-        (ALIGN_CENTER, 'Centre'),
-        (ALIGN_RIGHT,  'Right'),
-    ]
-
-    WIDTH_CHOICES = [
-        (25,  '25%'),
-        (33,  '33%'),
-        (50,  '50%'),
-        (66,  '66%'),
-        (75,  '75%'),
-        (100, '100% (full width)'),
-    ]
-
     page = models.ForeignKey(
         'Page', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='blocks',
@@ -74,18 +55,6 @@ class TextBlock(models.Model):
     )
     title   = models.CharField(max_length=100, blank=True)
     content = models.TextField(blank=True)
-    image   = models.ImageField(upload_to='blocks/', blank=True, null=True)
-    image_width = models.IntegerField(
-        choices=WIDTH_CHOICES,
-        default=100,
-        help_text='Display width of the block image as a percentage of its container',
-    )
-    image_align = models.CharField(
-        max_length=10,
-        choices=ALIGN_CHOICES,
-        default=ALIGN_LEFT,
-        help_text='Horizontal alignment of the block image',
-    )
     order          = models.IntegerField(default=0)
     content_format = models.CharField(
         max_length=10,

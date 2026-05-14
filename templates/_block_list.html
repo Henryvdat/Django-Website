@@ -8,15 +8,6 @@
     {% for block in blocks %}
         <div class="text-block text-block--{{ block.style }}">
 
-            {% if block.image %}
-                <div class="mb-3" style="width:{{ block.image_width }}%;{% if block.image_align == 'center' %}margin:0 auto;{% elif block.image_align == 'right' %}margin-left:auto;{% endif %}">
-                    <img src="{{ block.image.url }}"
-                         alt="{{ block.title }}"
-                         class="rounded"
-                         style="width:100%;height:auto;display:block;">
-                </div>
-            {% endif %}
-
             {% if block.title or block.content %}
                 {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
                 {% if block.content %}

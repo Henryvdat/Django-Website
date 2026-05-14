@@ -21,7 +21,7 @@ class PageForm(forms.ModelForm):
 class TextBlockForm(forms.ModelForm):
     class Meta:
         model = TextBlock
-        fields = ['title', 'content', 'content_format', 'image', 'image_width', 'image_align', 'style']
+        fields = ['title', 'content', 'content_format', 'style']
         widgets = {
             'title':       forms.TextInput(attrs={'class': 'form-control'}),
             'content':     forms.Textarea(attrs={
@@ -30,7 +30,5 @@ class TextBlockForm(forms.ModelForm):
                 'id': 'id_block_content',
             }),
             'content_format': forms.HiddenInput(attrs={'id': 'id_block_content_format'}),
-            'image_width': forms.Select(attrs={'class': 'form-select'}),
-            'image_align': forms.Select(attrs={'class': 'form-select'}),
             'style':       forms.Select(attrs={'class': 'form-select'}),
         }

@@ -185,6 +185,12 @@
       } else {
         html = currentVal;
       }
+      // Strip any <html>/<head>/<body> wrapper that some renderers add
+      html = html.replace(/<html[^>]*>/gi, '').replace(/<\/html>/gi, '');
+      var headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+      html = html.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
+      html = html.replace(/<body[^>]*>/gi, '').replace(/<\/body>/gi, '');
+      html = html.trim();
     }
 
     htmlTa.value       = html;
