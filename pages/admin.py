@@ -6,7 +6,7 @@ from django.contrib import messages
 
 from .constants import CSS_TEXTAREA_ATTRS, DEFAULT_BOOTSTRAP_OVERRIDES
 from .models import (
-    BootstrapOverrides, ContactInfo, Page,
+    BootstrapOverrides, ContactInfo, Footer, Page,
     SiteSettings, SiteStylesheet, TextBlock,
 )
 
@@ -43,6 +43,17 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SingletonAdminMixin, admin.ModelAdmin):
     pass
+
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+
+@admin.register(Footer)
+class FooterAdmin(SingletonAdminMixin, admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            'fields': ('text', 'copyright_text'),
+        }),
+    )
 
 
 # ── Contact Page ──────────────────────────────────────────────────────────────
