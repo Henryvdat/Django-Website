@@ -1,4 +1,4 @@
-from pages.models import TextBlock, Footer
+from pages.models import TextBlock
 
 
 class TextBlockContent(TextBlock):
@@ -9,9 +9,10 @@ class TextBlockContent(TextBlock):
         verbose_name_plural = 'Text Blocks'
 
 
-class FooterContent(Footer):
+class FooterTextBlock(TextBlock):
+    """Proxy of TextBlock scoped to blocks with location='footer'."""
     class Meta:
         proxy = True
         app_label = 'content_blocks'
-        verbose_name = 'Footer'
-        verbose_name_plural = 'Footer'
+        verbose_name = 'Footer Text Block'
+        verbose_name_plural = 'Footer Text Blocks'

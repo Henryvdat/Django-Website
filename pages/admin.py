@@ -6,7 +6,7 @@ from django.contrib import messages
 
 from .constants import CSS_TEXTAREA_ATTRS, DEFAULT_BOOTSTRAP_OVERRIDES
 from .models import (
-    BootstrapOverrides, ContactInfo, Footer, Page,
+    BootstrapOverrides, ContactInfo, Footer, HeaderSettings, Page,
     SiteSettings, SiteStylesheet, TextBlock,
 )
 
@@ -24,7 +24,7 @@ class SingletonAdminMixin:
 class TextBlockInline(admin.StackedInline):
     model  = TextBlock
     extra  = 1
-    fields = ('title', 'content', 'image', 'image_width', 'image_align', 'style', 'order')
+    fields = ('title', 'content', 'style', 'order')
 
 
 # ── Page ──────────────────────────────────────────────────────────────────────
@@ -38,6 +38,21 @@ class PageAdmin(admin.ModelAdmin):
     inlines = [TextBlockInline]
 
 
+# ── Header Settings ───────────────────────────────────────────────────────────
+
+@admin.register(HeaderSettings)
+class HeaderSettingsAdmin(SingletonAdminMixin, admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            'fields': ('text', 'image'),
+            'description': (
+                'Optional banner content shown below the navbar. '
+                'Background colour is controlled via Page Settings → Site Stylesheet.'
+            ),
+        }),
+    )
+
+
 # ── Site Settings ─────────────────────────────────────────────────────────────
 
 @admin.register(SiteSettings)
@@ -45,13 +60,20 @@ class SiteSettingsAdmin(SingletonAdminMixin, admin.ModelAdmin):
     pass
 
 
-# ── Footer ────────────────────────────────────────────────────────────────────
+# ── Footer Settings ───────────────────────────────────────────────────────────
 
 @admin.register(Footer)
 class FooterAdmin(SingletonAdminMixin, admin.ModelAdmin):
     fieldsets = (
-        (None, {
-            'fields': ('text', 'copyright_text'),
+        ('Content', {
+            'fields': ('text', 'image'),
+            'description': (
+                'Main footer content. For additional text blocks use '
+                'Content Blocks → Footer Text Block.'
+            ),
+        }),
+        ('Copyright', {
+            'fields': ('copyright_text',),
         }),
     )
 

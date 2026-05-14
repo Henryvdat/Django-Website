@@ -1,20 +1,38 @@
 from django.contrib import admin
 
-from pages.admin import SingletonAdminMixin
-from pages.models import Footer
+from pages.models import TextBlock
 
-from .models import FooterContent, TextBlockContent
+from .models import FooterTextBlock, TextBlockContent
 
+
+# ── Text Blocks (page content) ────────────────────────────────────────────────
 
 @admin.register(TextBlockContent)
 class TextBlockContentAdmin(admin.ModelAdmin):
-    list_display   = ('title', 'style', 'order', 'created_at')
-    list_editable  = ('style', 'order')
-    ordering       = ('order',)
+    list_display  = ('title', 'style', 'order', 'created_at')
+    list_editable = ('style', 'order')
+    ordering      = ('order',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(location=TextBlock.LOCATION_PAGE)
+
+    def save_model(self, request, obj, form, change):
+        obj.location = TextBlock.LOCATION_PAGE
+        super().save_model(request, obj, form, change)
 
 
-@admin.register(FooterContent)
-class FooterContentAdmin(SingletonAdminMixin, admin.ModelAdmin):
-    list_display = ('__str__', 'copyright_text')
-    # has_add_permission is inherited from SingletonAdminMixin,
-    # which checks Footer (the parent model) via self.model.objects.exists()
+# ── Footer Text Blocks ────────────────────────────────────────────────────────
+
+@admin.register(FooterTextBlock)
+class FooterTextBlockAdmin(admin.ModelAdmin):
+    list_display  = ('title', 'order', 'updated_at')
+    list_editable = ('order',)
+    ordering      = ('order',)
+    fields        = ('title', 'content', 'content_format', 'order')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(location=TextBlock.LOCATION_FOOTER)
+
+    def save_model(self, request, obj, form, change):
+        obj.location = TextBlock.LOCATION_FOOTER
+        super().save_model(request, obj, form, change)

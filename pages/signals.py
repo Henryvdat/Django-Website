@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import BootstrapOverrides, Footer, SiteSettings, SiteStylesheet
+from .models import BootstrapOverrides, Footer, HeaderSettings, SiteSettings, SiteStylesheet
 
 
 @receiver(post_save, sender=SiteStylesheet)
@@ -30,3 +30,8 @@ def clear_footer_cache(sender, **kwargs):
 @receiver(post_save, sender=SiteSettings)
 def clear_site_settings_cache(sender, **kwargs):
     cache.delete('site_settings')
+
+
+@receiver(post_save, sender=HeaderSettings)
+def clear_header_settings_cache(sender, **kwargs):
+    cache.delete('header_settings')

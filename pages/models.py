@@ -48,6 +48,13 @@ class TextBlock(models.Model):
         (STYLE_CUSTOM_FONT,    'Custom Font — large serif display style'),
     ]
 
+    LOCATION_PAGE   = 'page'
+    LOCATION_FOOTER = 'footer'
+    LOCATION_CHOICES = [
+        (LOCATION_PAGE,   'Page'),
+        (LOCATION_FOOTER, 'Footer'),
+    ]
+
     page = models.ForeignKey(
         'Page', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='blocks',
@@ -66,6 +73,12 @@ class TextBlock(models.Model):
         choices=STYLE_CHOICES,
         default=STYLE_DEFAULT,
     )
+    location = models.CharField(
+        max_length=10,
+        choices=LOCATION_CHOICES,
+        default=LOCATION_PAGE,
+        help_text='Whether this block appears on a page or in the site footer',
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -75,11 +88,28 @@ class TextBlock(models.Model):
 
 
 class Footer(models.Model):
-    text           = models.TextField(blank=True)
-    copyright_text = models.CharField(max_length=200, blank=True)
+    text           = models.TextField(blank=True, help_text='Text displayed in the footer (supports Markdown)')
+    image          = models.ImageField(upload_to='footer/', blank=True, null=True, help_text='Optional image displayed in the footer')
+    copyright_text = models.CharField(max_length=200, blank=True, help_text='Small copyright line shown at the bottom of the footer')
+
+    class Meta:
+        verbose_name        = 'Footer Settings'
+        verbose_name_plural = 'Footer Settings'
 
     def __str__(self):
-        return 'Site Footer'
+        return 'Footer Settings'
+
+
+class HeaderSettings(models.Model):
+    text  = models.TextField(blank=True, help_text='Text displayed in a banner below the navbar (supports Markdown)')
+    image = models.ImageField(upload_to='header/', blank=True, null=True, help_text='Optional banner image displayed below the navbar')
+
+    class Meta:
+        verbose_name        = 'Header Settings'
+        verbose_name_plural = 'Header Settings'
+
+    def __str__(self):
+        return 'Header Settings'
 
 
 class SiteStylesheet(models.Model):
