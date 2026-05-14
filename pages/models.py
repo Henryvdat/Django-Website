@@ -3,10 +3,24 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 
+FORMAT_MARKDOWN = 'markdown'
+FORMAT_HTML     = 'html'
+FORMAT_CHOICES  = [
+    (FORMAT_MARKDOWN, 'Markdown'),
+    (FORMAT_HTML,     'HTML'),
+]
+
+
 class Page(models.Model):
-    title      = models.CharField(max_length=200)
-    slug       = models.SlugField(unique=True)
-    content    = models.TextField()
+
+    title          = models.CharField(max_length=200)
+    slug           = models.SlugField(unique=True)
+    content        = models.TextField()
+    content_format = models.CharField(
+        max_length=10,
+        choices=FORMAT_CHOICES,
+        default=FORMAT_MARKDOWN,
+    )
     published  = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,7 +86,12 @@ class TextBlock(models.Model):
         default=ALIGN_LEFT,
         help_text='Horizontal alignment of the block image',
     )
-    order   = models.IntegerField(default=0)
+    order          = models.IntegerField(default=0)
+    content_format = models.CharField(
+        max_length=10,
+        choices=FORMAT_CHOICES,
+        default=FORMAT_MARKDOWN,
+    )
     style   = models.CharField(
         max_length=20,
         choices=STYLE_CHOICES,

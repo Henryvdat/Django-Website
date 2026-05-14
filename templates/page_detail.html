@@ -17,7 +17,7 @@
 
 {% if page.content %}
 <div class="mb-4 prose">
-    {{ page.content|markdown }}
+    {% render_content page.content page.content_format %}
 </div>
 {% endif %}
 

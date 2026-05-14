@@ -26,10 +26,10 @@
         <label class="form-label fw-semibold">
             Content
             <span class="text-muted small fw-normal">
-                — Markdown supported. Use the <strong>🖼 Insert image</strong> toolbar button
-                to embed &amp; size images inline.
+                — Use the <strong>📝 Markdown</strong> or <strong>&lt;/&gt; HTML Source</strong> tabs to switch editing modes.
             </span>
         </label>
+        {{ form.content_format }}
         {{ form.content }}
     </div>
 
@@ -49,6 +49,6 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-{% include '_easymde_init.html' with element_id='id_page_content' min_height='300px' %}
+{% include '_easymde_init.html' with element_id='id_page_content' format_field_id='id_page_content_format' min_height='300px' %}
 {% include '_inline_image_modal.html' %}
 {% endblock %}

@@ -1,20 +1,103 @@
 {% comment %}
-  Initialises an EasyMDE Markdown editor and wires up the "Insert image" toolbar button.
+  Initialises an EasyMDE Markdown editor with a Markdown / HTML Source tab switcher.
 
   Required context variables:
-    element_id  — the id attribute of the <textarea> to enhance
-    min_height  — CSS min-height string, e.g. "200px"
+    element_id       — id of the <textarea> to enhance  (e.g. 'id_page_content')
+    format_field_id  — id of the hidden content_format input (e.g. 'id_page_content_format')
+    min_height       — CSS min-height string (e.g. '300px')
 
   The host template must:
     • include this file inside {% block extra_js %}
-    • include '_inline_image_modal.html' after this include (once per page)
+    • include '_inline_image_modal.html' after this include
     • have Bootstrap JS loaded in base.html (already done)
 
   The initialised EasyMDE instance is stored in window.activeMDE so that
   _inline_image_modal.html can insert content at the cursor position.
 {% endcomment %}
 
+<style>
+  /* ── Tab bar ─────────────────────────────────────────── */
+  .source-tab-bar {
+    display: flex;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 1;
+  }
+  .source-tab-bar .tab-btn {
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .source-tab-bar .tab-btn:first-child { border-right: none; }
+  .source-tab-bar .tab-btn.active {
+    background: #fff;
+    color: #212529;
+    border-bottom-color: #fff;
+  }
+
+  /* ── HTML source panel ───────────────────────────────── */
+  .html-source-wrap {
+    display: none;
+    border: 1px solid #dee2e6;
+    border-radius: 0 4px 4px 4px;
+    background: #1e1e1e;
+    overflow: hidden;
+  }
+  .html-source-wrap.visible { display: block; }
+
+  .html-source-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+  }
+  .html-source-toolbar span {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-right: auto;
+  }
+  .html-source-toolbar button {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    background: #3a3a3a;
+    color: #ccc;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .html-source-toolbar button:hover { background: #555; color: #fff; }
+
+  .html-source-textarea {
+    display: block;
+    width: 100%;
+    min-height: {{ min_height }};
+    padding: 14px 16px;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Menlo', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    border: none;
+    outline: none;
+    resize: vertical;
+    tab-size: 2;
+    box-sizing: border-box;
+  }
+</style>
+
 <script>
+(function () {
+  /* ── 1. Boot EasyMDE ──────────────────────────────────── */
   window.activeMDE = new EasyMDE({
     element:      document.getElementById('{{ element_id }}'),
     spellChecker: false,
@@ -35,4 +118,132 @@
       'guide',
     ],
   });
+
+  var mde         = window.activeMDE;
+  var formatField = document.getElementById('{{ format_field_id }}');
+
+  /* EasyMDE injects a wrapper div directly after the original textarea;
+     the toolbar is a sibling inside that wrapper.                       */
+  var easyMdeDiv  = mde.toolbar_div.parentNode;   /* .EasyMDE wrapper   */
+
+  /* ── 2. Inject tab bar before the EasyMDE block ────────── */
+  var tabBar = document.createElement('div');
+  tabBar.className = 'source-tab-bar';
+  tabBar.innerHTML =
+    '<button type="button" class="tab-btn active" data-tab="markdown">📝 Markdown</button>' +
+    '<button type="button" class="tab-btn" data-tab="html">&lt;/&gt; HTML Source</button>';
+  easyMdeDiv.parentNode.insertBefore(tabBar, easyMdeDiv);
+
+  /* ── 3. Build HTML source panel and insert after EasyMDE ── */
+  var htmlWrap = document.createElement('div');
+  htmlWrap.className = 'html-source-wrap';
+
+  var copyBtnId   = '{{ element_id }}_copy_btn';
+  var formatBtnId = '{{ element_id }}_format_btn';
+  var srcTaId     = '{{ element_id }}_html_source';
+
+  htmlWrap.innerHTML =
+    '<div class="html-source-toolbar">' +
+      '<span>HTML source — edits here are saved as raw HTML</span>' +
+      '<button type="button" id="' + copyBtnId   + '">⎘ Copy</button>' +
+      '<button type="button" id="' + formatBtnId + '">✦ Format</button>' +
+    '</div>' +
+    '<textarea id="' + srcTaId + '" class="html-source-textarea" spellcheck="false"></textarea>';
+
+  easyMdeDiv.parentNode.insertBefore(htmlWrap, easyMdeDiv.nextSibling);
+
+  var htmlTa = document.getElementById(srcTaId);
+
+  /* ── 4. Tab switching ───────────────────────────────────── */
+  function switchToMarkdown() {
+    /* Put the HTML source back into EasyMDE as-is so the user can keep editing */
+    mde.value(htmlTa.value);
+    formatField.value = 'markdown';   /* switching back: treat as markdown */
+
+    easyMdeDiv.style.display = '';
+    htmlWrap.classList.remove('visible');
+    tabBar.querySelector('[data-tab="markdown"]').classList.add('active');
+    tabBar.querySelector('[data-tab="html"]').classList.remove('active');
+
+    setTimeout(function () { mde.codemirror.refresh(); mde.codemirror.focus(); }, 10);
+  }
+
+  function switchToHtml() {
+    var currentVal = mde.value();
+    var html;
+
+    if (formatField.value === 'html') {
+      /* Already HTML — show the stored HTML unchanged */
+      html = currentVal;
+    } else {
+      /* Markdown — render it with EasyMDE's bundled marked */
+      if (window.marked) {
+        html = window.marked.parse ? window.marked.parse(currentVal)
+                                   : window.marked(currentVal);
+      } else if (mde.options && mde.options.previewRender) {
+        html = mde.options.previewRender(currentVal);
+      } else {
+        html = currentVal;
+      }
+    }
+
+    htmlTa.value       = html;
+    formatField.value  = 'html';
+
+    easyMdeDiv.style.display = 'none';
+    htmlWrap.classList.add('visible');
+    tabBar.querySelector('[data-tab="markdown"]').classList.remove('active');
+    tabBar.querySelector('[data-tab="html"]').classList.add('active');
+
+    htmlTa.focus();
+  }
+
+  tabBar.addEventListener('click', function (e) {
+    var btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    if (btn.dataset.tab === 'markdown') switchToMarkdown();
+    else                                 switchToHtml();
+  });
+
+  /* ── 5. Copy button ─────────────────────────────────────── */
+  document.getElementById(copyBtnId).addEventListener('click', function () {
+    navigator.clipboard.writeText(htmlTa.value).then(function () {
+      var b = document.getElementById(copyBtnId);
+      var orig = b.textContent;
+      b.textContent = '✓ Copied!';
+      setTimeout(function () { b.textContent = orig; }, 1800);
+    });
+  });
+
+  /* ── 6. Naïve HTML formatter ────────────────────────────── */
+  document.getElementById(formatBtnId).addEventListener('click', function () {
+    var raw = htmlTa.value;
+    var blockTags = 'div|p|h[1-6]|ul|ol|li|blockquote|pre|table|thead|tbody|tr|td|th|section|article|header|footer|nav|main';
+    var pretty = raw
+      .replace(new RegExp('(<(?:' + blockTags + ')[^>]*>)', 'gi'), '\n$1')
+      .replace(new RegExp('(<\/(?:' + blockTags + ')>)',    'gi'), '$1\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    htmlTa.value = pretty;
+  });
+
+  /* ── 7. Sync active panel on form submit ────────────────── */
+  var form = document.getElementById('{{ element_id }}').closest('form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      if (htmlWrap.classList.contains('visible')) {
+        document.getElementById('{{ element_id }}').value = htmlTa.value;
+        formatField.value = 'html';
+      } else {
+        /* EasyMDE already keeps its textarea in sync */
+        formatField.value = 'markdown';
+      }
+    });
+  }
+
+  /* ── 8. Auto-open HTML tab if content was saved as HTML ─── */
+  if (formatField && formatField.value === 'html') {
+    setTimeout(switchToHtml, 80);
+  }
+})();
 </script>

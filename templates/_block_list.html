@@ -20,7 +20,7 @@
             {% if block.title or block.content %}
                 {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
                 {% if block.content %}
-                    <div class="prose">{{ block.content|markdown }}</div>
+                    <div class="prose">{% render_content block.content block.content_format %}</div>
                 {% endif %}
             {% endif %}
 
