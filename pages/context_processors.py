@@ -10,7 +10,7 @@ frequently; they are fetched fresh on every request (still a very cheap query).
 """
 from django.core.cache import cache
 
-from .models import Footer, HeaderSettings, SiteSettings, TextBlock
+from .models import Footer, HeaderSettings, NavLink, SiteSettings, TextBlock
 
 
 def footer_content(request):
@@ -29,6 +29,11 @@ def footer_content(request):
         site_settings = SiteSettings.objects.first()
         cache.set('site_settings', site_settings, 300)
 
+    nav_links = cache.get('nav_links')
+    if nav_links is None:
+        nav_links = list(NavLink.objects.select_related('page').order_by('order', 'id'))
+        cache.set('nav_links', nav_links, 300)
+
     footer_text_blocks = list(
         TextBlock.objects.filter(location=TextBlock.LOCATION_FOOTER).order_by('order')
     )
@@ -37,5 +42,6 @@ def footer_content(request):
         'footer':             footer,
         'header_settings':    header_settings,
         'site_settings':      site_settings,
+        'nav_links':          nav_links,
         'footer_text_blocks': footer_text_blocks,
     }

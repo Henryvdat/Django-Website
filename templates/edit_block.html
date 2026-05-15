@@ -39,6 +39,16 @@
         {{ form.style }}
     </div>
 
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Link to page <span class="text-muted small fw-normal">— optional, adds a button at the bottom of the block</span></label>
+        {{ form.link_page }}
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Button label <span class="text-muted small fw-normal">— defaults to "Read More"</span></label>
+        {{ form.link_label }}
+    </div>
+
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Save Changes</button>
         {% if block and block.page %}

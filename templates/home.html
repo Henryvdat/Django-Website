@@ -4,11 +4,16 @@
 {% block content %}
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="mb-0">Home</h1>
+    <h1 class="mb-0">{{ home_settings.heading|default:"Home" }}</h1>
     {% if user.is_staff %}
         <a href="{% url 'add_block_home' %}" class="btn btn-sm btn-outline-primary">+ Add Block</a>
     {% endif %}
 </div>
+
+{% if home_settings.intro %}
+    {% load markdown_extras %}
+    <div class="mb-4 prose">{% render_content home_settings.intro "markdown" %}</div>
+{% endif %}
 
 {% include '_block_list.html' with blocks=blocks %}
 

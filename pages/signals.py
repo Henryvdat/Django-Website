@@ -6,10 +6,10 @@ so that views and the context processor always serve fresh data without waiting
 for the TTL to expire.
 """
 from django.core.cache import cache
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from .models import BootstrapOverrides, Footer, HeaderSettings, SiteSettings, SiteStylesheet
+from .models import BootstrapOverrides, Footer, HeaderSettings, NavLink, SiteSettings, SiteStylesheet
 
 
 @receiver(post_save, sender=SiteStylesheet)
@@ -35,3 +35,9 @@ def clear_site_settings_cache(sender, **kwargs):
 @receiver(post_save, sender=HeaderSettings)
 def clear_header_settings_cache(sender, **kwargs):
     cache.delete('header_settings')
+
+
+@receiver(post_save, sender=NavLink)
+@receiver(post_delete, sender=NavLink)
+def clear_nav_links_cache(sender, **kwargs):
+    cache.delete('nav_links')

@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    home, page_detail, contact,
+    home, page_detail,
     edit_page,
     edit_block, add_block, delete_block,
     upload_inline_image,
@@ -18,8 +18,6 @@ router.register(r'api/pages', PageViewSet, basename='page')
 urlpatterns = [
     path('', home, name='home'),
     path('page/<slug:slug>/', page_detail, name='page_detail'),
-    path('contact/', contact, name='contact'),
-
     # Page editing (staff only)
     path('page/<slug:slug>/edit/', edit_page, name='edit_page'),
 

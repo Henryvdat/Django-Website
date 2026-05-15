@@ -21,7 +21,11 @@ class Page(models.Model):
         choices=FORMAT_CHOICES,
         default=FORMAT_MARKDOWN,
     )
-    published  = models.BooleanField(default=True)
+    published        = models.BooleanField(default=True)
+    featured_on_home = models.BooleanField(
+        default=False,
+        help_text='Show this page as a card in the homepage page grid',
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -80,6 +84,16 @@ class TextBlock(models.Model):
         help_text='Whether this block appears on a page or in the site footer',
     )
 
+    link_page = models.ForeignKey(
+        'Page', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='linked_from_blocks',
+        help_text='Optional page to link to — renders a button at the bottom of the block',
+    )
+    link_label = models.CharField(
+        max_length=80, blank=True, default='Read More',
+        help_text='Button label (defaults to "Read More")',
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -135,22 +149,6 @@ class SiteSettings(models.Model):
         return 'Site Settings'
 
 
-class ContactInfo(models.Model):
-    heading       = models.CharField(max_length=200, default='Contact Us')
-    intro_text    = models.TextField(blank=True, help_text='Introductory paragraph shown at the top of the page')
-    email         = models.EmailField(blank=True)
-    phone         = models.CharField(max_length=50, blank=True)
-    address       = models.TextField(blank=True, help_text='Physical address — each line will be shown separately')
-    opening_hours = models.TextField(blank=True, help_text='E.g. Mon–Fri 9am–5pm')
-    extra_info    = models.TextField(blank=True, help_text='Any additional information to display at the bottom')
-
-    class Meta:
-        verbose_name        = 'Contact Page'
-        verbose_name_plural = 'Contact Page'
-
-    def __str__(self):
-        return 'Contact Page'
-
 
 class BootstrapOverrides(models.Model):
     css = models.TextField(blank=True)
@@ -161,3 +159,69 @@ class BootstrapOverrides(models.Model):
 
     def __str__(self):
         return 'Bootstrap Overrides'
+
+
+class HomeSettings(models.Model):
+    """Singleton — controls the layout of the homepage."""
+    heading        = models.CharField(
+        max_length=100, default='Home',
+        help_text='Heading shown at the top of the homepage',
+    )
+    intro          = models.TextField(
+        blank=True,
+        help_text='Optional intro paragraph shown below the heading (supports Markdown)',
+    )
+    show_page_grid = models.BooleanField(
+        default=True,
+        help_text='Show the page cards grid below the blocks',
+    )
+    featured_pages = models.ManyToManyField(
+        'Page',
+        blank=True,
+        related_name='featured_in_home',
+        help_text='Pages to show in the grid. Leave empty to show all published pages.',
+    )
+
+    class Meta:
+        verbose_name        = 'Homepage Settings'
+        verbose_name_plural = 'Homepage Settings'
+
+    def __str__(self):
+        return 'Homepage Settings'
+
+
+class HomepageBlock(TextBlock):
+    """Proxy model so homepage blocks get their own admin section."""
+    class Meta:
+        proxy                = True
+        verbose_name         = 'Homepage Block'
+        verbose_name_plural  = 'Homepage Blocks'
+
+
+class NavLink(models.Model):
+    """A single entry in the site navigation menu."""
+
+    label      = models.CharField(max_length=100, help_text='Text shown in the menu')
+    page       = models.ForeignKey(
+        'Page', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='nav_links',
+        help_text='Link to an internal page — leave blank if using a custom URL',
+    )
+    custom_url = models.CharField(
+        max_length=200, blank=True,
+        help_text='Use for non-page links, e.g. /contact/ or https://example.com',
+    )
+    order      = models.IntegerField(default=0, help_text='Lower numbers appear first')
+
+    class Meta:
+        verbose_name        = 'Nav Link'
+        verbose_name_plural = 'Nav Links'
+        ordering            = ['order', 'id']
+
+    def __str__(self):
+        return self.label
+
+    def get_url(self):
+        if self.page_id:
+            return self.page.get_absolute_url()
+        return self.custom_url

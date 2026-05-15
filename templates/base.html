@@ -62,25 +62,17 @@
 
                 <div class="list-group list-group-flush">
 
+                    {% for link in nav_links %}
+                    <a href="{{ link.get_url }}"
+                       class="list-group-item list-group-item-action">
+                        {{ link.label }}
+                    </a>
+                    {% empty %}
                     <a href="{% url 'home' %}"
                        class="list-group-item list-group-item-action">
                         Home
                     </a>
-
-                    <a href="{% url 'page_detail' slug='about' %}"
-                       class="list-group-item list-group-item-action">
-                        About
-                    </a>
-
-                    <a href="{% url 'page_detail' slug='products' %}"
-                       class="list-group-item list-group-item-action">
-                        Products
-                    </a>
-
-                    <a href="{% url 'contact' %}"
-                       class="list-group-item list-group-item-action">
-                        Contact
-                    </a>
+                    {% endfor %}
 
                 </div>
 
